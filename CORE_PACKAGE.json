@@ -1,0 +1,5 @@
+{
+  "name": "ADS1262_driver",
+  "description": "ADS1262 driver",
+  "provider": "core"
+}
