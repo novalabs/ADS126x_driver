@@ -10,26 +10,100 @@
 
 #undef CRC // Workaround for ST header files macro
 
-#define REGISTER_BEGIN(__name__, __address__)  BEGIN_BITFIELD_TYPE(__name__, uint8_t) \
-    enum {ADDRESS = __address__};
-
-#define REGISTER_BITS(__offset__, __len__, __name__) ADD_BITFIELD_MEMBER(__name__, __offset__, __len__)
-#define REGISTER_ENUM(__offset__, __len__, __name__, __enum__) ADD_ENUM_BITFIELD_MEMBER(__name__, __offset__, __len__, __enum__)
-#define REGISTER_RSRV(__offset__, __len__, __name__, __value__) ADD_CONST_BITFIELD_MEMBER(__name__, __offset__, __len__, __value__)
-#define REGISTER_END() END_BITFIELD_TYPE()
-
-#define BYTE_BITFIELD_BEGIN(__name__)  BEGIN_BITFIELD_TYPE(__name__, uint8_t)
-#define BYTE_BITFIELD_BITS(__offset__, __len__, __name__) ADD_BITFIELD_MEMBER(__name__, __offset__, __len__)
-#define BYTE_BITFIELD_ENUM(__offset__, __len__, __name__, __enum__) ADD_ENUM_BITFIELD_MEMBER(__name__, __offset__, __len__, __enum__)
-#define BYTE_BITFIELD_RSRV(__offset__, __len__, __name__, __value__) ADD_CONST_BITFIELD_MEMBER(__name__, __offset__, __len__, __value__)
-#define BYTE_BITFIELD_END() END_BITFIELD_TYPE()
-
-
 namespace core {
 namespace ADS1262_driver {
+namespace registers {
+
+/*! \brief Register Begin
+ *
+ * \param name Name of the register
+ * \param address Address of the register
+ * \param access Access type   core::ADS1262_driver::registers::AccessType
+ */
+#define REGISTER_BEGIN(__name__, __address__, __access__)  BEGIN_BITFIELD_TYPE(__name__, uint8_t) \
+    enum {ADDRESS = __address__}; \
+    enum {ACCESS = __access__};
+
+/*! \brief Register Bits
+ *
+ * \param offset Field starting bit
+ * \param len Field length
+ * \param name Field name
+ */
+#define REGISTER_BITS(__offset__, __len__, __name__) ADD_BITFIELD_MEMBER(__name__, __offset__, __len__)
+
+/*! \brief Register Enum
+ *
+ * \param offset Field starting bit
+ * \param len Field length
+ * \param name Field name
+ * \param enum Type of the enum
+ */
+#define REGISTER_ENUM(__offset__, __len__, __name__, __enum__) ADD_ENUM_BITFIELD_MEMBER(__name__, __offset__, __len__, __enum__)
+
+/*! \brief Register Reserved
+ *
+ * \param offset Field starting bit
+ * \param len Field length
+ * \param name Field name
+ * \param value Unmodifiable value
+ */
+#define REGISTER_RSRV(__offset__, __len__, __name__, __value__) ADD_CONST_BITFIELD_MEMBER(__name__, __offset__, __len__, __value__)
+
+/*! \brief Register End
+ */
+#define REGISTER_END() END_BITFIELD_TYPE()
+
+/*! \brief 8 bit bitfield Begin
+ *
+ * \param name Name of the bitfield
+ */
+#define BYTE_BITFIELD_BEGIN(__name__)  BEGIN_BITFIELD_TYPE(__name__, uint8_t)
+
+/*! \brief 8 bit Bitfield Bits
+ *
+ * \param offset Field starting bit
+ * \param len Field length
+ * \param name Field name
+ */
+#define BYTE_BITFIELD_BITS(__offset__, __len__, __name__) ADD_BITFIELD_MEMBER(__name__, __offset__, __len__)
+
+/*! \brief 8 bit Bitfield Enum
+ *
+ * \param offset Field starting bit
+ * \param len Field length
+ * \param name Field name
+ * \param enum Type of the enum
+ */
+#define BYTE_BITFIELD_ENUM(__offset__, __len__, __name__, __enum__) ADD_ENUM_BITFIELD_MEMBER(__name__, __offset__, __len__, __enum__)
+
+/*! \brief 8 bit Bitfield Reserved
+ *
+ * \param offset Field starting bit
+ * \param len Field length
+ * \param name Field name
+ * \param value Unmodifiable value
+ */
+#define BYTE_BITFIELD_RSRV(__offset__, __len__, __name__, __value__) ADD_CONST_BITFIELD_MEMBER(__name__, __offset__, __len__, __value__)
+
+/*! \brief 8 bit Bitfield End
+ */
+#define BYTE_BITFIELD_END() END_BITFIELD_TYPE()
+
+/*! \brief Register access type */
+enum AccessType {
+    READ_ONLY  = 0x01, //!< Read only
+    WRITE_ONLY = 0x02, //!< Write only
+    READ_WRITE = 0x03  //!< Read and Write
+};
+
+// ************************************************************************* //
+// *** REGISTERS
+// ************************************************************************* //
+
 // --- Register_ID ------------------------------------------------------------
 // ADDRESS: 0x00
-REGISTER_BEGIN(Register_ID, 0x00)
+REGISTER_BEGIN(Register_ID, 0x00, READ_ONLY)
 enum class DevID : uint8_t {
     ADS1262 = 0x00,
     ADS1263 = 0x01,
@@ -42,7 +116,7 @@ REGISTER_END()
 
 // --- Register_POWER ---------------------------------------------------------
 // ADDRESS: 0x01, RESET = 0x11
-REGISTER_BEGIN(Register_POWER, 0x01)
+REGISTER_BEGIN(Register_POWER, 0x01, READ_WRITE)
 REGISTER_RSRV(5, 3, __1, 0x00)
 REGISTER_BITS(4, 1, reset) // [1] 1 = reset has occurred
 REGISTER_RSRV(2, 2, __2, 0x00)
@@ -53,7 +127,7 @@ REGISTER_END()
 
 // --- Register_INTERFACE -----------------------------------------------------
 // ADDRESS: 0x02, RESET = 0x05
-REGISTER_BEGIN(Register_INTERFACE, 0x02)
+REGISTER_BEGIN(Register_INTERFACE, 0x02, READ_WRITE)
 enum class CRC : uint8_t {
     DISABLED        = 0x00, // 00 = disabled
     ENABLE_CHECKSUM = 0x01,    // 01 = enable checksum byte in checksum mode
@@ -69,7 +143,7 @@ REGISTER_END()
 
 // --- Register_MODE0 ---------------------------------------------------------
 // ADDRESS: 0x03, RESET = 0x00
-REGISTER_BEGIN(Register_MODE0, 0x03)
+REGISTER_BEGIN(Register_MODE0, 0x03, READ_WRITE)
 enum class Delay : uint8_t {
     NO_DELAY = 0x00,
     _8_7us   = 0x01,
@@ -95,7 +169,7 @@ REGISTER_END()
 
 // --- Register_MODE1 ---------------------------------------------------------
 // ADDRESS: 0x04, RESET = 0x80
-REGISTER_BEGIN(Register_MODE1, 0x04)
+REGISTER_BEGIN(Register_MODE1, 0x04, READ_WRITE)
 enum class Filter : uint8_t {
     SINC_1 = 0x00,
     SINC_2 = 0x01,
@@ -113,7 +187,7 @@ REGISTER_END()
 
 // --- Register_MODE2 ---------------------------------------------------------
 // ADDRESS: 0x05, RESET = 0x04
-REGISTER_BEGIN(Register_MODE2, 0x05)
+REGISTER_BEGIN(Register_MODE2, 0x05, READ_WRITE)
 enum class Gain : uint8_t {
     GAIN_1  = 0x00,
     GAIN_2  = 0x01,
@@ -150,7 +224,7 @@ REGISTER_END()
 
 // --- Register_INPMUX ---------------------------------------------------------
 // ADDRESS: 0x06, RESET = 0x01
-REGISTER_BEGIN(Register_INPMUX, 0x06)
+REGISTER_BEGIN(Register_INPMUX, 0x06, READ_WRITE)
 enum class MuxPositive : uint8_t {
     AIN_0       = 0x00,
     AIN_1       = 0x01,
@@ -196,49 +270,49 @@ REGISTER_END()
 
 // --- Register_OFCAL0 --------------------------------------------------------
 // ADDRESS: 0x07, RESET = 0x00
-REGISTER_BEGIN(Register_OFCAL0, 0x07)
-REGISTER_BITS(0, 8, ofc7_0) // [00000000] offset calibration LSB
+REGISTER_BEGIN(Register_OFCAL0, 0x07, READ_WRITE)
+REGISTER_BITS(0, 8, ofc_7_0) // [00000000] offset calibration LSB
 REGISTER_END()
 // ----------------------------------------------------------------------------
 
 // --- Register_OFCAL1 --------------------------------------------------------
 // ADDRESS: 0x08, RESET = 0x00
-REGISTER_BEGIN(Register_OFCAL1, 0x08)
-REGISTER_BITS(0, 8, ofc15_8) // [00000000] offset calibration
+REGISTER_BEGIN(Register_OFCAL1, 0x08, READ_WRITE)
+REGISTER_BITS(0, 8, ofc_15_8) // [00000000] offset calibration
 REGISTER_END()
 // ----------------------------------------------------------------------------
 
 // --- Register_OFCAL2 --------------------------------------------------------
 // ADDRESS: 0x09, RESET = 0x00
-REGISTER_BEGIN(Register_OFCAL2, 0x09)
-REGISTER_BITS(0, 8, ofc23_16) // [00000000] offset calibration MSB
+REGISTER_BEGIN(Register_OFCAL2, 0x09, READ_WRITE)
+REGISTER_BITS(0, 8, ofc_23_16) // [00000000] offset calibration MSB
 REGISTER_END()
 // ----------------------------------------------------------------------------
 
 // --- Register_FSCAL0 --------------------------------------------------------
 // ADDRESS: 0x0A, RESET = 0x40
-REGISTER_BEGIN(Register_FSCAL0, 0x0A)
-REGISTER_BITS(0, 8, fscal7_0) // [01000000] offset calibration LSB
+REGISTER_BEGIN(Register_FSCAL0, 0x0A, READ_WRITE)
+REGISTER_BITS(0, 8, fscal_7_0) // [01000000] offset calibration LSB
 REGISTER_END()
 // ----------------------------------------------------------------------------
 
 // --- Register_FSCAL1 --------------------------------------------------------
 // ADDRESS: 0x0B, RESET = 0x00
-REGISTER_BEGIN(Register_FSCAL1, 0x0B)
-REGISTER_BITS(0, 8, fsc15_8) // [00000000] offset calibration
+REGISTER_BEGIN(Register_FSCAL1, 0x0B, READ_WRITE)
+REGISTER_BITS(0, 8, fsc_15_8) // [00000000] offset calibration
 REGISTER_END()
 // ----------------------------------------------------------------------------
 
 // --- Register_FSCAL2 --------------------------------------------------------
 // ADDRESS: 0x0C, RESET = 0x00
-REGISTER_BEGIN(Register_FSCAL2, 0x0C)
-REGISTER_BITS(0, 8, fsc23_16) // [00000000] offset calibration MSB
+REGISTER_BEGIN(Register_FSCAL2, 0x0C, READ_WRITE)
+REGISTER_BITS(0, 8, fsc_23_16) // [00000000] offset calibration MSB
 REGISTER_END()
 // ----------------------------------------------------------------------------
 
 // --- Register_IDACMUX ---------------------------------------------------------
 // ADDRESS: 0x0D, RESET = 0xBB
-REGISTER_BEGIN(Register_IDACMUX, 0x0D)
+REGISTER_BEGIN(Register_IDACMUX, 0x0D, READ_WRITE)
 enum class MuxIDAC2 : uint8_t {
     AIN_0   = 0x00,
     AIN_1   = 0x01,
@@ -276,7 +350,7 @@ REGISTER_END()
 
 // --- Register_IDACMAG ---------------------------------------------------------
 // ADDRESS: 0x0E, RESET = 0x00
-REGISTER_BEGIN(Register_IDACMAG, 0x0E)
+REGISTER_BEGIN(Register_IDACMAG, 0x0E, READ_WRITE)
 enum class MagIDAC2 : uint8_t {
     OFF     = 0x00,
     _50uA   = 0x01,
@@ -312,7 +386,7 @@ REGISTER_END()
 
 // --- Register_REFMUX --------------------------------------------------------
 // ADDRESS: 0x0F, RESET = 0x00
-REGISTER_BEGIN(Register_REFMUX, 0x0F)
+REGISTER_BEGIN(Register_REFMUX, 0x0F, READ_WRITE)
 enum class MuxPositive : uint8_t {
     INTERNAL_2V5  = 0x00,
     AIN_0         = 0x01,
@@ -337,7 +411,7 @@ REGISTER_END()
 
 // --- Register_TDACP --------------------------------------------------------
 // ADDRESS: 0x10, RESET = 0x00
-REGISTER_BEGIN(Register_TDACP, 0x10)
+REGISTER_BEGIN(Register_TDACP, 0x10, READ_WRITE)
 enum class MagPositive : uint8_t {
     _4_5V  = 0b01001,
     _3_5V  = 0b01000,
@@ -354,7 +428,7 @@ REGISTER_END()
 
 // --- Register_TDACN ---------------------------------------------------------
 // ADDRESS: 0x11, RESET = 0x00
-REGISTER_BEGIN(Register_TDACN, 0x11)
+REGISTER_BEGIN(Register_TDACN, 0x11, READ_WRITE)
 enum class MagNegative : uint8_t {
     _4_5V  = 0b01001,
     _3_5V  = 0b01000,
@@ -366,6 +440,135 @@ enum class MagNegative : uint8_t {
 REGISTER_BITS(7, 1, outn)  // [0] 1 = TDACN connected to AIN6
 REGISTER_RSRV(5, 2, __1, 0x00)
 REGISTER_ENUM(0, 5, magn, MagNegative) // [00000] TDACN output magnitude
+REGISTER_END()
+// ----------------------------------------------------------------------------
+
+// --- Register_GPIOCON -------------------------------------------------------
+// ADDRESS: 0x12, RESET = 0x00
+REGISTER_BEGIN(Register_GPIOCON, 0x12, READ_WRITE)
+REGISTER_BITS(0, 7, con)  // TODO
+REGISTER_END()
+// ----------------------------------------------------------------------------
+
+// --- Register_GPIODIR -------------------------------------------------------
+// ADDRESS: 0x13, RESET = 0x00
+REGISTER_BEGIN(Register_GPIODIR, 0x13, READ_WRITE)
+REGISTER_BITS(0, 7, dir)  // TODO
+REGISTER_END()
+// ----------------------------------------------------------------------------
+
+// --- Register_GPIODAT -------------------------------------------------------
+// ADDRESS: 0x14, RESET = 0x00
+REGISTER_BEGIN(Register_GPIODAT, 0x14, READ_WRITE)
+REGISTER_BITS(0, 7, dat)  // TODO
+REGISTER_END()
+// ----------------------------------------------------------------------------
+
+// --- Register_ADC2CFG -------------------------------------------------------
+// ADDRESS: 0x15, RESET = 0x00
+REGISTER_BEGIN(Register_ADC2CFG, 0x15, READ_WRITE)
+enum class Gain : uint8_t {
+    GAIN_1  = 0x00,
+    GAIN_2  = 0x01,
+    GAIN_4  = 0x02,
+    GAIN_8  = 0x03,
+    GAIN_16 = 0x04,
+    GAIN_32 = 0x05,
+    GAIN_64 = 0x06,
+    GAIN_128 = 0x07,
+};
+
+enum class ReferenceInput : uint8_t {
+    INTERNAL_2V5       = 0x00,
+    AIN_0_1            = 0x01,
+    AIN_2_3            = 0x02,
+    AIN_4_5            = 0x03,
+    INTERNAL_AVDD_AVSS = 0x04,
+};
+
+enum class DataRate : uint8_t {
+    DATARATE_10    = 0x00,
+    DATARATE_100   = 0x01,
+    DATARATE_400   = 0x02,
+    DATARATE_800   = 0x03,
+};
+REGISTER_ENUM(6, 2, dr2, DataRate) // [00] Data rate
+REGISTER_ENUM(3, 3, ref2, ReferenceInput) // [000] Reference selection
+REGISTER_ENUM(0, 3, gain2, Gain) // [000] Gain
+REGISTER_END()
+// ----------------------------------------------------------------------------
+
+// --- Register_ADC2MUX -------------------------------------------------------
+// ADDRESS: 0x16, RESET = 0x01
+REGISTER_BEGIN(Register_ADC2MUX, 0x16, READ_WRITE)
+enum class MuxPositive : uint8_t {
+    AIN_0       = 0x00,
+    AIN_1       = 0x01,
+    AIN_2       = 0x02,
+    AIN_3       = 0x03,
+    AIN_4       = 0x04,
+    AIN_5       = 0x05,
+    AIN_6       = 0x06,
+    AIN_7       = 0x07,
+    AIN_8       = 0x08,
+    AIN_9       = 0x09,
+    AIN_COM     = 0x0A,
+    TEMP        = 0x0B,
+    ANALOG_PWR  = 0x0C,
+    DIGITAL_PWR = 0x0D,
+    TDAC        = 0x0E,
+    FLOAT       = 0x0F
+};
+
+enum class MuxNegative : uint8_t {
+    AIN_0       = 0x00,
+    AIN_1       = 0x01,
+    AIN_2       = 0x02,
+    AIN_3       = 0x03,
+    AIN_4       = 0x04,
+    AIN_5       = 0x05,
+    AIN_6       = 0x06,
+    AIN_7       = 0x07,
+    AIN_8       = 0x08,
+    AIN_9       = 0x09,
+    AIN_COM     = 0x0A,
+    TEMP        = 0x0B,
+    ANALOG_PWR  = 0x0C,
+    DIGITAL_PWR = 0x0D,
+    TDAC        = 0x0E,
+    FLOAT       = 0x0F
+};
+
+REGISTER_ENUM(4, 4, muxp, MuxPositive) // [0000] positive input multiplexer selection
+REGISTER_ENUM(0, 4, muxn, MuxNegative) // [0001] negative input multiplexer selection
+REGISTER_END()
+// ----------------------------------------------------------------------------
+
+// --- Register_ADC2OFC0 ------------------------------------------------------
+// ADDRESS: 0x17, RESET = 0x00
+REGISTER_BEGIN(Register_ADC2OFC0, 0x17, READ_WRITE)
+REGISTER_BITS(0, 8, ofc2_7_0) // [00000000] offset calibration LSB
+REGISTER_END()
+// ----------------------------------------------------------------------------
+
+// --- Register_ADC2OFC1 ------------------------------------------------------
+// ADDRESS: 0x18, RESET = 0x00
+REGISTER_BEGIN(Register_ADC2OFC1, 0x18, READ_WRITE)
+REGISTER_BITS(0, 8, ofc2_15_8) // [00000000] offset calibration MSB
+REGISTER_END()
+// ----------------------------------------------------------------------------
+
+// --- Register_ADC2FSC0 ------------------------------------------------------
+// ADDRESS: 0x19, RESET = 0x00
+REGISTER_BEGIN(Register_ADC2FSC0, 0x19, READ_WRITE)
+REGISTER_BITS(0, 8, fsc2_7_0) // [00000000] offset calibration LSB
+REGISTER_END()
+// ----------------------------------------------------------------------------
+
+// --- Register_ADC2FSC1 ------------------------------------------------------
+// ADDRESS: 0x1A, RESET = 0x40
+REGISTER_BEGIN(Register_ADC2FSC1, 0x1A, READ_WRITE)
+REGISTER_BITS(0, 8, fsc2_15_8) // [01000000] offset calibration MSB
 REGISTER_END()
 // ----------------------------------------------------------------------------
 
@@ -381,5 +584,6 @@ BYTE_BITFIELD_BITS(1, 1, pgad_alm)  // 1 = PGA Differential output alarm
 BYTE_BITFIELD_BITS(0, 1, reset)  // 1 = Reset occurred
 BYTE_BITFIELD_END()
 // ----------------------------------------------------------------------------
+}
 }
 }
