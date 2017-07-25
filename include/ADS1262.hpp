@@ -17,24 +17,27 @@ namespace ADS1262_driver {
 class ADS1262
 {
 public:
-    using Gain     = Register_MODE2::Gain;
-    using DataRate = Register_MODE2::DataRate;
-    using Filter   = Register_MODE1::Filter;
-    using Delay    = Register_MODE0::Delay;
+    using Gain     = registers::Register_MODE2::Gain;
+    using DataRate = registers::Register_MODE2::DataRate;
+    using Filter   = registers::Register_MODE1::Filter;
+    using Delay    = registers::Register_MODE0::Delay;
 
     // Input
-    using InputMuxPositive = Register_INPMUX::MuxPositive;
-    using InputMuxNegative = Register_INPMUX::MuxNegative;
+    using InputMuxPositive = registers::Register_INPMUX::MuxPositive;
+    using InputMuxNegative = registers::Register_INPMUX::MuxNegative;
 
     // Reference
-    using ReferenceMuxPositive = Register_REFMUX::MuxPositive;
-    using ReferenceMuxNegative = Register_REFMUX::MuxNegative;
+    using ReferenceMuxPositive = registers::Register_REFMUX::MuxPositive;
+    using ReferenceMuxNegative = registers::Register_REFMUX::MuxNegative;
 
     // IDAC
-    using IDAC1Mux       = Register_IDACMUX::MuxIDAC1;
-    using IDAC2Mux       = Register_IDACMUX::MuxIDAC2;
-    using IDAC1Magnitude = Register_IDACMAG::MagIDAC1;
-    using IDAC2Magnitude = Register_IDACMAG::MagIDAC2;
+    using IDAC1Mux       = registers::Register_IDACMUX::MuxIDAC1;
+    using IDAC2Mux       = registers::Register_IDACMUX::MuxIDAC2;
+    using IDAC1Magnitude = registers::Register_IDACMAG::MagIDAC1;
+    using IDAC2Magnitude = registers::Register_IDACMAG::MagIDAC2;
+
+    // Status
+    using Status         = registers::StatusByte;
 
 public:
     ADS1262(
@@ -67,7 +70,7 @@ public:
     bool
     update();
 
-    StatusByte
+    Status
     getStatus() const;
 
     float
@@ -129,15 +132,37 @@ public:
     bool
     calibrateOffset();
 
+protected:
+    template <typename T>
+    inline bool
+    read(
+        T& reg
+    )
+    {
+        static_assert(T::ACCESS & registers::AccessType::READ_ONLY, "The register is write only");
+        return _read(T::ADDRESS, reg);
+    }
+
+    template <typename T>
+    inline bool
+    write(
+        const T& data
+    )
+    {
+        static_assert(T::ACCESS & registers::AccessType::WRITE_ONLY, "The register is read only");
+        return _write(T::ADDRESS, data);
+    }
 
 private:
-    uint8_t
-    read(
-        uint8_t address
+
+    bool
+    _read(
+        uint8_t address,
+        uint8_t& data
     );
 
-    void
-    write(
+    bool
+    _write(
         uint8_t address,
         uint8_t data
     );
@@ -155,7 +180,7 @@ private:
     core::hw::Pad&        _start;
     core::os::Thread*     _runner;
     core::os::Time        _timestamp;
-    StatusByte _status;
+    Status _status;
     int32_t    _data;
 };
 }

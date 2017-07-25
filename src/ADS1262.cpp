@@ -50,7 +50,7 @@ ADS1262::init()
 bool
 ADS1262::probe()
 {
-    uint8_t power;
+    bool success = true;
 
     _start.clear();
     _reset.clear();
@@ -58,13 +58,14 @@ ADS1262::probe()
     _reset.set();
     core::os::Thread::sleep(core::os::Time::ms(500));
 
-    power = read(Register_POWER::ADDRESS);
+    registers::Register_POWER power;
 
-    if (power != 0x11) {
-        return false;
-    }
+    read(power);
 
-    return true;
+    success &= power.intref == 1;
+    success &= power.reset == 1;
+
+    return success;
 } // ADS1262::probe
 
 bool
@@ -114,21 +115,14 @@ ADS1262::setPGA(
     Gain gain
 )
 {
-#if 0
-    uint8_t tmp;
+    registers::Register_MODE2 tmp;
 
-    tmp  = read(REG_MODE2);
-    tmp &= ~(0x07 << 4);
-    tmp |= (gain << 4);
-    write(REG_MODE2, tmp);
-#endif
-
-    Register_MODE2 tmp = read(Register_MODE2::ADDRESS);
+    read(tmp);
 
     tmp.bypass = enabled ? 0 : 1;
     tmp.gain   = gain;
 
-    write(Register_MODE2::ADDRESS, tmp);
+    write(tmp);
 
     return true;
 } // ADS1262::setGain
@@ -138,20 +132,13 @@ ADS1262::setDataRate(
     DataRate data_rate
 )
 {
-#if 0
-    uint8_t tmp;
+    registers::Register_MODE2 tmp;
 
-    tmp  = read(REG_MODE2);
-    tmp &= ~0x0F;
-    tmp |= data_rate;
-    write(REG_MODE2, tmp);
-#endif
-
-    Register_MODE2 tmp = read(Register_MODE2::ADDRESS);
+    read(tmp);
 
     tmp.dr = data_rate;
 
-    write(Register_MODE2::ADDRESS, tmp);
+    write(tmp);
 
     return true;
 } // ADS1262::setDataRate
@@ -161,11 +148,13 @@ ADS1262::setFilter(
     Filter filter
 )
 {
-    Register_MODE1 tmp = read(Register_MODE1::ADDRESS);
+    registers::Register_MODE1 tmp;
+
+    read(tmp);
 
     tmp.filter = filter;
 
-    write(Register_MODE1::ADDRESS, tmp);
+    write(tmp);
 
     return true;
 }
@@ -175,11 +164,13 @@ ADS1262::setDelay(
     Delay delay
 )
 {
-    Register_MODE0 tmp = read(Register_MODE0::ADDRESS);
+    registers::Register_MODE0 tmp;
+
+    read(tmp);
 
     tmp.delay = delay;
 
-    write(Register_MODE0::ADDRESS, tmp);
+    write(tmp);
 
     return true;
 }
@@ -190,12 +181,14 @@ ADS1262::setInputMux(
     InputMuxNegative negative
 )
 {
-    Register_INPMUX tmp = read(Register_INPMUX::ADDRESS);
+    registers::Register_INPMUX tmp;
+
+    read(tmp);
 
     tmp.muxp = positive;
     tmp.muxn = negative;
 
-    write(Register_INPMUX::ADDRESS, tmp);
+    write(tmp);
 
     return true;
 }
@@ -206,12 +199,14 @@ ADS1262::setReferenceMux(
     ReferenceMuxNegative negative
 )
 {
-    Register_REFMUX tmp = read(Register_REFMUX::ADDRESS);
+    registers::Register_REFMUX tmp;
+
+    read(tmp);
 
     tmp.rmuxp = positive;
     tmp.rmuxn = negative;
 
-    write(Register_REFMUX::ADDRESS, tmp);
+    write(tmp);
 
     return true;
 }
@@ -221,11 +216,13 @@ ADS1262::setReferencePolarityReversal(
     bool reverse
 )
 {
-    Register_MODE0 tmp = read(Register_MODE0::ADDRESS);
+    registers::Register_MODE0 tmp;
+
+    read(tmp);
 
     tmp.refrev = reverse ? 1 : 0;
 
-    write(Register_MODE0::ADDRESS, tmp);
+    write(tmp);
 
     return true;
 }
@@ -236,12 +233,14 @@ ADS1262::setIDACMux(
     IDAC2Mux idac2mux
 )
 {
-    Register_IDACMUX tmp = read(Register_IDACMUX::ADDRESS);
+    registers::Register_IDACMUX tmp;
+
+    read(tmp);
 
     tmp.mux1 = idac1mux;
     tmp.mux2 = idac2mux;
 
-    write(Register_IDACMUX::ADDRESS, tmp);
+    write(tmp);
 
     return true;
 }
@@ -252,12 +251,14 @@ ADS1262::setIDACMagnitude(
     IDAC2Magnitude idac2mag
 )
 {
-    Register_IDACMAG tmp = read(Register_IDACMAG::ADDRESS);
+    registers::Register_IDACMAG tmp;
+
+    read(tmp);
 
     tmp.mag1 = idac1mag;
     tmp.mag2 = idac2mag;
 
-    write(Register_IDACMAG::ADDRESS, tmp);
+    write(tmp);
 
     return true;
 }
@@ -265,10 +266,16 @@ ADS1262::setIDACMagnitude(
 bool
 ADS1262::calibrateOffset()
 {
-    Register_INPMUX inmux = read(Register_INPMUX::ADDRESS); // Save mux configuration
+    registers::Register_INPMUX inmux;
+    registers::Register_INPMUX floating;
+
+    floating.muxn = registers::Register_INPMUX::MuxNegative::FLOAT;
+    floating.muxp = registers::Register_INPMUX::MuxPositive::FLOAT;
+
+    read(inmux);
 
     _start.clear();
-    write(Register_INPMUX::ADDRESS, 0xFF); // Float inputs
+    write(floating); // Float inputs
     _start.set();
 
     core::os::Thread::sleep(core::os::Time::ms(100)); // I do not know if this is really needed
@@ -276,16 +283,19 @@ ADS1262::calibrateOffset()
     cmd(CMD_SFOCAL1);
     wait();
 
-    write(Register_INPMUX::ADDRESS, inmux); // Restore old mux configuration
+    write(inmux); // Restore old mux configuration
 
     return true;
 }
 
-uint8_t
-ADS1262::read(
-    uint8_t address
+bool
+ADS1262::_read(
+    uint8_t address,
+    uint8_t& data
 )
 {
+    bool success = true;
+
     uint8_t txbuf[3];
     uint8_t rxbuf[3];
 
@@ -299,8 +309,33 @@ ADS1262::read(
     _spi.deselect();
     _spi.releaseBus();
 
-    return rxbuf[2];
+    data = rxbuf[2];
+
+    return success;
 }
+
+bool
+ADS1262::_write(
+    uint8_t address,
+    uint8_t data
+)
+{
+    bool success = true;
+
+    uint8_t txbuf[3];
+
+  txbuf[0] = CMD_WREG | address;
+  txbuf[1] = 0x00;
+  txbuf[2] = data;
+
+  _spi.acquireBus();
+  _spi.select();
+  _spi.send(3, txbuf);
+  _spi.deselect();
+  _spi.releaseBus();
+
+  return success;
+} // ADS1262::write
 
 void
 ADS1262::cmd(
@@ -313,69 +348,6 @@ ADS1262::cmd(
     _spi.deselect();
     _spi.releaseBus();
 }
-
-void
-ADS1262::write(
-    uint8_t address,
-    uint8_t data
-)
-{
-    uint8_t txbuf[3];
-
-    switch (address) {
-/* READ ONLY REGISTERS */
-      case Register_ID::ADDRESS:
-          /* Ignore */
-          return;
-
-/* READ/WRITE REGISTERS */
-      case Register_POWER::ADDRESS:
-      case Register_INTERFACE::ADDRESS:
-      case Register_MODE0::ADDRESS:
-      case Register_MODE1::ADDRESS:
-      case Register_MODE2::ADDRESS:
-      case Register_INPMUX::ADDRESS:
-      case Register_OFCAL0::ADDRESS:
-      case Register_OFCAL1::ADDRESS:
-      case Register_OFCAL2::ADDRESS:
-      case Register_FSCAL0::ADDRESS:
-      case Register_FSCAL1::ADDRESS:
-      case Register_FSCAL2::ADDRESS:
-      case Register_IDACMUX::ADDRESS:
-      case Register_IDACMAG::ADDRESS:
-      case Register_REFMUX::ADDRESS:
-      case Register_TDACP::ADDRESS:
-      case Register_TDACN::ADDRESS:
-/*
-     case Register_GPIOCON::ADDRESS:
-     case Register_GPIODIR::ADDRESS:
-     case Register_GPIODAT::ADDRESS:
-     case Register_ADC2CFG::ADDRESS:
-     case Register_ADC2MUX::ADDRESS:
-     case Register_ADC2OFC0::ADDRESS:
-     case Register_ADC2OFC1::ADDRESS:
-     case Register_ADC2FSC0::ADDRESS:
-     case Register_ADC2FSC1::ADDRESS:
- */
-          txbuf[0] = CMD_WREG | address;
-          txbuf[1] = 0x00;
-          txbuf[2] = data;
-
-          _spi.acquireBus();
-          _spi.select();
-          _spi.send(3, txbuf);
-          _spi.deselect();
-          _spi.releaseBus();
-
-          break;
-
-/* RESERVED REGISTERS */
-      default:
-          /* Reserved register must not be written! */
-          CORE_ASSERT(FALSE);
-          break;
-    } // switch
-} // ADS1262::write
 
 bool
 ADS1262::update()
@@ -406,7 +378,7 @@ ADS1262::update()
     return _status == 0b01000000; // A new measure has been taken, without alarms
 } // ADS1262::update
 
-StatusByte
+ADS1262::Status
 ADS1262::getStatus() const
 {
     return _status;
