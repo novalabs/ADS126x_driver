@@ -11,7 +11,7 @@
 #undef CRC // Workaround for ST header files macro
 
 namespace core {
-namespace ADS1262_driver {
+namespace ADS126x_driver {
 namespace registers {
 
 /*! \brief Register Begin
