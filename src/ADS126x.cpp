@@ -4,28 +4,28 @@
  * subject to the License Agreement located in the file LICENSE.
  */
 
-#include <core/ADS1262_driver/ADS1262.hpp>
+#include <core/ADS126x_driver/ADS126x.hpp>
 
 #include <stdlib.h>
 
 #include <functional>
 
-#define CMD_NOP     0x00
-#define CMD_RESET   0x06
-#define CMD_START1    0x08
-#define CMD_STOP1   0x0A
-#define CMD_START2    0x0C
-#define CMD_STOP2   0x0E
-#define CMD_RDATA1    0x12
-#define CMD_RDATA2    0x14
-#define CMD_SYOCAL1   0x16
-#define CMD_SYGCAL1   0x17
-#define CMD_SFOCAL1   0x19
-#define CMD_SYOCAL2   0x1B
-#define CMD_SYGCAL2   0x1C
-#define CMD_SFOCAL2   0x1E
-#define CMD_RREG    0x20
-#define CMD_WREG    0x40
+#define CMD_NOP      0x00
+#define CMD_RESET    0x06
+#define CMD_START1   0x08
+#define CMD_STOP1    0x0A
+#define CMD_START2   0x0C
+#define CMD_STOP2    0x0E
+#define CMD_RDATA1   0x12
+#define CMD_RDATA2   0x14
+#define CMD_SYOCAL1  0x16
+#define CMD_SYGCAL1  0x17
+#define CMD_SFOCAL1  0x19
+#define CMD_SYOCAL2  0x1B
+#define CMD_SYGCAL2  0x1C
+#define CMD_SFOCAL2  0x1E
+#define CMD_RREG     0x20
+#define CMD_WREG     0x40
 
 #define MSG_DATA_READY  0x0D
 
@@ -68,7 +68,7 @@ ADS126x::probe()
     success &= power.reset == 1;
 
     return success;
-} // ADS1262::probe
+} // ADS126x::probe
 
 bool
 ADS126x::configure()
@@ -77,7 +77,8 @@ ADS126x::configure()
 }
 
 bool
-ADS126x::start() {
+ADS126x::start()
+{
     _reset.set();
 
     core::os::Thread::sleep(core::os::Time::ms(500));
@@ -86,7 +87,8 @@ ADS126x::start() {
 }
 
 bool
-ADS126x::stop() {
+ADS126x::stop()
+{
     _start.clear();
     _reset.clear();
 
@@ -97,7 +99,7 @@ ADS126x::stop() {
 
 bool
 ADS126x::_read(
-    uint8_t address,
+    uint8_t  address,
     uint8_t& data
 )
 {
@@ -119,7 +121,7 @@ ADS126x::_read(
     data = rxbuf[2];
 
     return success;
-}
+} // ADS126x::_read
 
 bool
 ADS126x::_write(
@@ -131,18 +133,18 @@ ADS126x::_write(
 
     uint8_t txbuf[3];
 
-  txbuf[0] = CMD_WREG | address;
-  txbuf[1] = 0x00;
-  txbuf[2] = data;
+    txbuf[0] = CMD_WREG | address;
+    txbuf[1] = 0x00;
+    txbuf[2] = data;
 
-  _spi.acquireBus();
-  _spi.select();
-  _spi.send(3, txbuf);
-  _spi.deselect();
-  _spi.releaseBus();
+    _spi.acquireBus();
+    _spi.select();
+    _spi.send(3, txbuf);
+    _spi.deselect();
+    _spi.releaseBus();
 
-  return success;
-} // ADS1262::write
+    return success;
+} // ADS126x::_write
 
 void
 ADS126x::cmd(
@@ -156,8 +158,11 @@ ADS126x::cmd(
     _spi.releaseBus();
 }
 
-ADS126x::DeviceType ADS126x::getType() {
+ADS126x::DeviceType
+ADS126x::getType()
+{
     registers::Register_ID id;
+
     read(id);
 
     return id.dev_id;
@@ -165,7 +170,10 @@ ADS126x::DeviceType ADS126x::getType() {
 
 // --- ADC1 -------------------------------------------------------------------
 
-ADC1::ADC1(ADS126x& device) : _device(device), _data(0), _status(0), _runner(nullptr) {};
+ADC1::ADC1(
+    ADS126x& device
+) : _device(device), _data(0), _status(0), _runner(nullptr) {}
+
 ADC1::~ADC1() {}
 
 bool
@@ -186,7 +194,7 @@ ADC1::start()
     _device._start.set();
 
     return true;
-} // ADS1262::start
+} // ADC1::start
 
 bool
 ADC1::stop()
@@ -218,7 +226,7 @@ ADC1::setPGA(
     _device.write(tmp);
 
     return true;
-} // ADS1262::setGain
+}
 
 bool
 ADC1::setDataRate(
@@ -234,7 +242,7 @@ ADC1::setDataRate(
     _device.write(tmp);
 
     return true;
-} // ADS1262::setDataRate
+}
 
 bool
 ADC1::setFilter(
@@ -344,8 +352,7 @@ ADC1::calibrateOffset()
     _device.write(inmux); // Restore old mux configuration
 
     return true;
-}
-
+} // ADC1::calibrateOffset
 
 bool
 ADC1::update()
@@ -367,7 +374,7 @@ ADC1::update()
     _status = rxbuf[0];
 
     return (_status.adc1 == 1) ? true : false; // return true if the data is new
-} // ADS1262::update
+} // ADC1::update
 
 ADC1::Status
 ADC1::getStatus() const
@@ -400,18 +407,25 @@ ADC1::wait()
 
 // ---- ADC2 ------------------------------------------------------------------
 
-ADC2::ADC2(ADS126x& device) : _device(device), _data(0), _status(0) {};
+ADC2::ADC2(
+    ADS126x& device
+) : _device(device), _data(0), _status(0) {}
+
 ADC2::~ADC2() {}
 
 bool
 ADC2::start()
 {
+    _device.cmd(CMD_START2);
+
     return true;
 } // ADS1262::start
 
 bool
 ADC2::stop()
 {
+    _device.cmd(CMD_STOP2);
+
     return true;
 }
 
@@ -424,7 +438,7 @@ ADC2::setPGA(
 
     _device.read(tmp);
 
-    tmp.gain2   = gain;
+    tmp.gain2 = gain;
 
     _device.write(tmp);
 
@@ -481,7 +495,6 @@ ADC2::setReferenceMux(
     return true;
 }
 
-
 bool
 ADC2::calibrateOffset()
 {
@@ -510,6 +523,46 @@ ADC2::calibrateOffset()
     _device.write(inmux); // Restore old mux configuration
 
     return true;
+} // ADC2::calibrateOffset
+
+bool
+ADC2::update()
+{
+    uint8_t txbuf;
+    uint8_t rxbuf[6];
+
+    txbuf = CMD_RDATA2;
+
+    _device._spi.acquireBus();
+    _device._spi.select();
+    _device._spi.send(1, &txbuf);
+    _device._spi.receive(6, &rxbuf);
+    _device._spi.deselect();
+    _device._spi.releaseBus();
+
+    _data = (rxbuf[1] << 24) | (rxbuf[2] << 16) | (rxbuf[3] << 8) | rxbuf[4];
+
+    _status = rxbuf[0];
+
+    return (_status.adc2 == 1) ? true : false; // return true if the data is new
+} // ADC2::update
+
+ADC2::Status
+ADC2::getStatus() const
+{
+    return _status;
+}
+
+float
+ADC2::get()
+{
+    return ((float)_data) * (1.0f / 0x7FFFFFFF);
+}
+
+int32_t
+ADC2::getRaw()
+{
+    return _data;
 }
 
 // ---- IDAC ------------------------------------------------------------------
@@ -551,30 +604,33 @@ IDAC::setIDACMagnitude(
 }
 
 // ---- ADS1262 ---------------------------------------------------------------
-ADS1262::ADS1262(core::hw::SPIDevice&  spi,
-        core::hw::EXTChannel& ext,
-        core::hw::Pad&        reset,
-        core::hw::Pad&        start) : ADS126x::ADS126x(spi,ext,reset,start), _adc1(*this), _idac(*this) {
+ADS1262::ADS1262(
+    core::hw::SPIDevice&  spi,
+    core::hw::EXTChannel& ext,
+    core::hw::Pad&        reset,
+    core::hw::Pad&        start
+) : ADS126x::ADS126x(spi, ext, reset, start), _adc1(*this), _idac(*this) {}
 
-}
 ADS1262::~ADS1262() {}
 
-ADS1263::ADS1263(core::hw::SPIDevice&  spi,
-        core::hw::EXTChannel& ext,
-        core::hw::Pad&        reset,
-        core::hw::Pad&        start) : ADS126x::ADS126x(spi,ext,reset,start), _adc1(*this), _adc2(*this), _idac(*this) {}
+ADS1263::ADS1263(
+    core::hw::SPIDevice&  spi,
+    core::hw::EXTChannel& ext,
+    core::hw::Pad&        reset,
+    core::hw::Pad&        start
+) : ADS126x::ADS126x(spi, ext, reset, start), _adc1(*this), _adc2(*this), _idac(*this) {}
 
 ADS1263::~ADS1263() {}
 
 bool
-ADS1263::probe() {
+ADS1263::probe()
+{
     // Make sure we have ADC2!
-    if(ADS126x::probe()) {
-        return getType() ==  DeviceType::ADS1263;
+    if (ADS126x::probe()) {
+        return getType() == DeviceType::ADS1263;
     }
 
     return false;
 }
-
 }
 }

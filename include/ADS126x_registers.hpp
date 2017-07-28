@@ -13,7 +13,6 @@
 namespace core {
 namespace ADS126x_driver {
 namespace registers {
-
 /*! \brief Register Begin
  *
  * \param name Name of the register
@@ -468,13 +467,13 @@ REGISTER_END()
 // ADDRESS: 0x15, RESET = 0x00
 REGISTER_BEGIN(Register_ADC2CFG, 0x15, READ_WRITE)
 enum class Gain : uint8_t {
-    GAIN_1  = 0x00,
-    GAIN_2  = 0x01,
-    GAIN_4  = 0x02,
-    GAIN_8  = 0x03,
-    GAIN_16 = 0x04,
-    GAIN_32 = 0x05,
-    GAIN_64 = 0x06,
+    GAIN_1   = 0x00,
+    GAIN_2   = 0x01,
+    GAIN_4   = 0x02,
+    GAIN_8   = 0x03,
+    GAIN_16  = 0x04,
+    GAIN_32  = 0x05,
+    GAIN_64  = 0x06,
     GAIN_128 = 0x07,
 };
 
@@ -487,11 +486,12 @@ enum class ReferenceInput : uint8_t {
 };
 
 enum class DataRate : uint8_t {
-    DATARATE_10    = 0x00,
-    DATARATE_100   = 0x01,
-    DATARATE_400   = 0x02,
-    DATARATE_800   = 0x03,
+    DATARATE_10  = 0x00,
+    DATARATE_100 = 0x01,
+    DATARATE_400 = 0x02,
+    DATARATE_800 = 0x03,
 };
+
 REGISTER_ENUM(6, 2, dr2, DataRate) // [00] Data rate
 REGISTER_ENUM(3, 3, ref2, ReferenceInput) // [000] Reference selection
 REGISTER_ENUM(0, 3, gain2, Gain) // [000] Gain
@@ -574,8 +574,8 @@ REGISTER_END()
 
 // --- STATUS Byte ------------------------------------------------------------
 BYTE_BITFIELD_BEGIN(StatusByte)
-BYTE_BITFIELD_RSRV(7, 1, __1, 0x00)
-BYTE_BITFIELD_BITS(6, 1, adc1)  // 1 = new data
+BYTE_BITFIELD_BITS(7, 1, adc2)  // 1 = new data (ADC2)
+BYTE_BITFIELD_BITS(6, 1, adc1)  // 1 = new data (ADC1)
 BYTE_BITFIELD_BITS(5, 1, extclk)  // 0 = internal clock, 1 = external clock
 BYTE_BITFIELD_BITS(4, 1, ref_alm)  // 1 = Low reference alarm
 BYTE_BITFIELD_BITS(3, 1, pgal_alm)  // 1 = PGA Absolute output low alarm
