@@ -488,7 +488,7 @@ ADC2::setReferenceMux(
 
     _device.read(tmp);
 
-    tmp.ref2 = tmp;
+    tmp.ref2 = mux;
 
     _device.write(tmp);
 
@@ -512,7 +512,7 @@ ADC2::calibrateOffset()
 
     _device.cmd(CMD_START2);
 
-    core::os::Thread::sleep(core::os::Time::ms(10)); // I do not know if this is really needed
+    core::os::Thread::sleep(core::os::Time::ms(200)); // I do not know if this is really needed
 
     _device.cmd(CMD_SFOCAL2);
 
@@ -603,13 +603,33 @@ IDAC::setIDACMagnitude(
     return true;
 }
 
+bool
+TDAC::setTDACMagnitude(
+    TDACNMagnitude tdacNmag,
+    TDACPMagnitude tdacPmag
+)
+{
+    registers::Register_TDACN tdacN;
+
+    _device.read(tdacN);
+    tdacN.magn = tdacNmag;
+    _device.write(tdacN);
+
+    registers::Register_TDACP tdacP;
+    _device.read(tdacP);
+    tdacP.magp = tdacPmag;
+    _device.write(tdacP);
+
+    return true;
+}
+
 // ---- ADS1262 ---------------------------------------------------------------
 ADS1262::ADS1262(
     core::hw::SPIDevice&  spi,
     core::hw::EXTChannel& ext,
     core::hw::Pad&        reset,
     core::hw::Pad&        start
-) : ADS126x::ADS126x(spi, ext, reset, start), _adc1(*this), _idac(*this) {}
+) : ADS126x::ADS126x(spi, ext, reset, start), _adc1(*this), _idac(*this), _tdac(*this) {}
 
 ADS1262::~ADS1262() {}
 
@@ -618,7 +638,7 @@ ADS1263::ADS1263(
     core::hw::EXTChannel& ext,
     core::hw::Pad&        reset,
     core::hw::Pad&        start
-) : ADS126x::ADS126x(spi, ext, reset, start), _adc1(*this), _adc2(*this), _idac(*this) {}
+) : ADS126x::ADS126x(spi, ext, reset, start), _adc1(*this), _adc2(*this), _idac(*this), _tdac(*this) {}
 
 ADS1263::~ADS1263() {}
 

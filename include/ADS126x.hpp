@@ -142,6 +142,28 @@ private:
     ADS126x& _device;
 };
 
+class TDAC
+{
+public:
+    using TDACNMagnitude = registers::Register_TDACN::MagNegative;
+    using TDACPMagnitude = registers::Register_TDACP::MagPositive;
+
+public:
+    TDAC(
+        ADS126x& device
+    ) : _device(device) {}
+
+    bool
+    setTDACMagnitude(
+        TDACNMagnitude tdacNmag,
+        TDACPMagnitude tdacPmag
+    );
+
+
+private:
+    ADS126x& _device;
+};
+
 class ADC1
 {
 public:
@@ -344,9 +366,16 @@ public:
         return _idac;
     }
 
+    inline TDAC&
+    tdac()
+    {
+        return _tdac;
+    }
+
 private:
     ADC1 _adc1;
     IDAC _idac;
+    TDAC _tdac;
 };
 
 class ADS1263:
@@ -384,10 +413,17 @@ public:
         return _idac;
     }
 
+    inline TDAC&
+    tdac()
+    {
+        return _tdac;
+    }
+
 private:
     ADC1 _adc1;
     ADC2 _adc2;
     IDAC _idac;
+    TDAC _tdac;
 };
 }
 }

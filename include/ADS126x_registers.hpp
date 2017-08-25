@@ -412,11 +412,25 @@ REGISTER_END()
 // ADDRESS: 0x10, RESET = 0x00
 REGISTER_BEGIN(Register_TDACP, 0x10, READ_WRITE)
 enum class MagPositive : uint8_t {
-    _4_5V  = 0b01001,
-    _3_5V  = 0b01000,
-    _3_0V  = 0b00111,
-    _2_75V = 0b00110,
-    // TO BE COMPLETED...
+    _4_5V       = 0b01001,
+    _3_5V       = 0b01000,
+    _3_0V       = 0b00111,
+    _2_75V      = 0b00110,
+    _2_625V     = 0b00101,
+    _2_5625V    = 0b00100,
+    _2_53125V   = 0b00011,
+    _2_515625V  = 0b00010,
+    _2_5078125V = 0b00001,
+    _2_5V       = 0b00000,
+    _2_4921875V = 0b10001,
+    _2_484375V  = 0b10010,
+    _2_46875V   = 0b10011,
+    _2_4375V    = 0b10100,
+    _2_375V     = 0b10101,
+    _2_25V      = 0b10110,
+    _2_0V       = 0b10111,
+    _1_5V       = 0b11000,
+    _0_5V       = 0b11001
 };
 
 REGISTER_BITS(7, 1, outp) // [0] 1 = TDACP connected to AIN6
@@ -429,11 +443,25 @@ REGISTER_END()
 // ADDRESS: 0x11, RESET = 0x00
 REGISTER_BEGIN(Register_TDACN, 0x11, READ_WRITE)
 enum class MagNegative : uint8_t {
-    _4_5V  = 0b01001,
-    _3_5V  = 0b01000,
-    _3_0V  = 0b00111,
-    _2_75V = 0b00110,
-    // TO BE COMPLETED...
+    _4_5V       = 0b01001,
+    _3_5V       = 0b01000,
+    _3_0V       = 0b00111,
+    _2_75V      = 0b00110,
+    _2_625V     = 0b00101,
+    _2_5625V    = 0b00100,
+    _2_53125V   = 0b00011,
+    _2_515625V  = 0b00010,
+    _2_5078125V = 0b00001,
+    _2_5V       = 0b00000,
+    _2_4921875V = 0b10001,
+    _2_484375V  = 0b10010,
+    _2_46875V   = 0b10011,
+    _2_4375V    = 0b10100,
+    _2_375V     = 0b10101,
+    _2_25V      = 0b10110,
+    _2_0V       = 0b10111,
+    _1_5V       = 0b11000,
+    _0_5V       = 0b11001
 };
 
 REGISTER_BITS(7, 1, outn)  // [0] 1 = TDACN connected to AIN6
