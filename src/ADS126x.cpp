@@ -191,7 +191,12 @@ ADC1::start()
             });
 
     _device._ext.enable();
-    _device._start.set();
+
+    if(_device._start.isNC()) {
+        _device.cmd(CMD_START1);
+    } else {
+        _device._start.set();
+    }
 
     return true;
 } // ADC1::start
@@ -199,7 +204,12 @@ ADC1::start()
 bool
 ADC1::stop()
 {
-    _device._start.clear();
+    if(_device._start.isNC()) {
+        _device.cmd(CMD_STOP1);
+    } else {
+        _device._start.clear();
+    }
+
     _device._ext.disable();
 
     if (_runner != nullptr) {
@@ -339,9 +349,19 @@ ADC1::calibrateOffset()
 
     _device.read(inmux);
 
-    _device._start.clear();
+    if(_device._start.isNC()) {
+        _device.cmd(CMD_STOP1);
+    } else {
+        _device._start.clear();
+    }
+
     _device.write(floating); // Float inputs
-    _device._start.set();
+
+    if(_device._start.isNC()) {
+        _device.cmd(CMD_START1);
+    } else {
+        _device._start.set();
+    }
 
     core::os::Thread::sleep(core::os::Time::ms(100)); // I do not know if this is really needed
 
