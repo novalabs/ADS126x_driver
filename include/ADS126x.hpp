@@ -204,7 +204,7 @@ public:
     setCallback();
 
     bool
-    wait();
+    wait(core::os::Time timeout = core::os::Time::INFINITE);
 
     bool
     update();

@@ -422,11 +422,11 @@ ADC1::getRaw()
 }
 
 bool
-ADC1::wait()
+ADC1::wait(core::os::Time timeout)
 {
     chSysLock();
     _runner = &core::os::Thread::self();
-    core::os::Thread::Return msg = core::os::Thread::sleep();
+    core::os::Thread::Return msg = core::os::Thread::sleep_timeout(timeout);
     chSysUnlock();
 
     return msg == MSG_DATA_READY;
