@@ -83,6 +83,13 @@ ADS126x::start()
 
     core::os::Thread::sleep(core::os::Time::ms(500));
 
+    // clear the reset bit, to detect HW resets.
+    registers::Register_POWER power;
+
+    read(power);
+    power.reset = 0;
+    write(power);
+
     return true;
 }
 
