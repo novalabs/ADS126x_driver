@@ -62,6 +62,8 @@ public:
     DeviceType
     getType();
 
+    bool
+	clearResetFlag();
 
 public:
     template <typename T>

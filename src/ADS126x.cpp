@@ -84,11 +84,7 @@ ADS126x::start()
     core::os::Thread::sleep(core::os::Time::ms(500));
 
     // clear the reset bit, to detect HW resets.
-    registers::Register_POWER power;
-
-    read(power);
-    power.reset = 0;
-    write(power);
+    clearResetFlag();
 
     return true;
 }
@@ -173,6 +169,20 @@ ADS126x::getType()
     read(id);
 
     return id.dev_id;
+}
+
+bool
+ADS126x::clearResetFlag()
+{
+	bool success = true;
+
+    registers::Register_POWER power;
+
+    success &= read(power);
+    power.reset = 0;
+    success &= write(power);
+
+    return success;
 }
 
 // --- ADC1 -------------------------------------------------------------------
