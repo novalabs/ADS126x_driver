@@ -139,6 +139,8 @@ public:
         IDAC2Magnitude idac2mag
     );
 
+    ADS126x&
+	getDevice();
 
 private:
     ADS126x& _device;
@@ -161,6 +163,8 @@ public:
         TDACPMagnitude tdacPmag
     );
 
+    ADS126x&
+	getDevice();
 
 private:
     ADS126x& _device;
@@ -261,6 +265,8 @@ public:
     bool
     calibrateOffset();
 
+    ADS126x&
+	getDevice();
 
 private:
     ADS126x& _device;
@@ -336,6 +342,8 @@ public:
     bool
     calibrateOffset();
 
+    ADS126x&
+	getDevice();
 
 private:
     ADS126x& _device;

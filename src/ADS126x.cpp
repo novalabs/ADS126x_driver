@@ -442,6 +442,12 @@ ADC1::wait(core::os::Time timeout)
     return msg == MSG_DATA_READY;
 }
 
+ADS126x&
+ADC1::getDevice()
+{
+	return _device;
+}
+
 // ---- ADC2 ------------------------------------------------------------------
 
 ADC2::ADC2(
@@ -602,6 +608,12 @@ ADC2::getRaw()
     return _data;
 }
 
+ADS126x&
+ADC2::getDevice()
+{
+	return _device;
+}
+
 // ---- IDAC ------------------------------------------------------------------
 
 bool
@@ -640,6 +652,12 @@ IDAC::setIDACMagnitude(
     return true;
 }
 
+ADS126x&
+IDAC::getDevice()
+{
+	return _device;
+}
+
 bool
 TDAC::setTDACMagnitude(
     TDACNMagnitude tdacNmag,
@@ -658,6 +676,12 @@ TDAC::setTDACMagnitude(
     _device.write(tdacP);
 
     return true;
+}
+
+ADS126x&
+TDAC::getDevice()
+{
+	return _device;
 }
 
 // ---- ADS1262 ---------------------------------------------------------------
