@@ -230,7 +230,7 @@ ADC1::stop()
     _device._ext.disable();
 
     if (_runner != nullptr) {
-        core::os::Thread::wake(*(this->_runner), 0); // Wake up consumer thread...
+        //core::os::Thread::wake(*(this->_runner), 0); // Wake up consumer thread...
         _runner = nullptr;
     }
 
