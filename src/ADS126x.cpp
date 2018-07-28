@@ -384,7 +384,7 @@ ADC1::calibrateOffset()
 
     _device.cmd(CMD_SFOCAL1);
 
-    wait();
+    wait(core::os::Time::s(5));
 
     _device.write(inmux); // Restore old mux configuration
 
